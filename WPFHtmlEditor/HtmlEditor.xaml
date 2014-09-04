@@ -1,0 +1,69 @@
+﻿<UserControl x:Class="SoftFluent.Tools.HtmlEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:fa="clr-namespace:FontAwesome"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <FontFamily x:Key="FontAwesome">/WPFHtmlEditor;component/Resources/#fontawesome</FontFamily>
+        <Style x:Key="GlyphToggle" TargetType="ToggleButton">
+            <Setter Property="FontFamily" Value="{StaticResource FontAwesome}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Padding" Value="2" />
+        </Style>
+        <Style x:Key="GlyphRadio" TargetType="RadioButton">
+            <Setter Property="FontFamily" Value="{StaticResource FontAwesome}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Padding" Value="2" />
+        </Style>
+        <Style x:Key="GlyphButton" TargetType="Button">
+            <Setter Property="FontFamily" Value="{StaticResource FontAwesome}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Padding" Value="2" />
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ToolBarTray IsLocked="True" Grid.Row="0" Name="Tray" Background="Gray">
+            <ToolBar Name="StyleBar">
+                <ToggleButton Name="CmdBold" ToolTip="Bold" Style="{StaticResource GlyphToggle}" Content="{fa:Glyphs Bold}" />
+                <ToggleButton Name="CmdItalic" ToolTip="Italic" Style="{StaticResource GlyphToggle}" Content="{fa:Glyphs Italic}" />
+                <ToggleButton Name="CmdUnderline" ToolTip="Underline" Style="{StaticResource GlyphToggle}" Content="{fa:Glyphs Underline}" />
+                <ToggleButton Name="CmdSubcript" ToolTip="Subscript" Style="{StaticResource GlyphToggle}" Content="{fa:Glyphs Subscript}" />
+                <ToggleButton Name="CmdSuperscript" ToolTip="Superscript" Style="{StaticResource GlyphToggle}" Content="{fa:Glyphs Superscript}" />
+                <Button Name="Cmdms_pasteTextOnly" ToolTip="Paste Text Only" Style="{StaticResource GlyphButton}" Content="{fa:Glyphs Paste}" Foreground="Green" />
+                <Button Name="Cmdms_pasteContentOnly" ToolTip="Paste Content Only" Style="{StaticResource GlyphButton}" Content="{fa:Glyphs Paste}" Foreground="Orange" />
+                <Button Name="CmdCreateLink" ToolTip="Insert Hyperlink" Style="{StaticResource GlyphButton}" Content="{fa:Glyphs Link}" />
+                <Button Name="ButtonFontColor" Style="{StaticResource GlyphButton}" Content="{fa:Glyphs Font}" Foreground="Red" />
+            </ToolBar>
+            <ToolBar Name="IndentBar">
+                <Button Name="CmdOutdent" ToolTip="Decrease Indent" Style="{StaticResource GlyphButton}" Content="{fa:Glyphs Outdent}" />
+                <Button Name="CmdIndent" ToolTip="Increase Indent" Style="{StaticResource GlyphButton}" Content="{fa:Glyphs Indent}" />
+                <Button Name="CmdInsertUnorderedList" ToolTip="Bulleted List" Style="{StaticResource GlyphButton}" Content="{fa:Glyphs ListUl}" />
+                <Button Name="CmdInsertOrderedList" ToolTip="Numbered List" Style="{StaticResource GlyphButton}" Content="{fa:Glyphs ListOl}" />
+            </ToolBar>
+            <ToolBar Name="AlignBar">
+                <RadioButton Name="CmdJustifyLeft" ToolTip="Align Left" Style="{StaticResource GlyphRadio}" Content="{fa:Glyphs AlignLeft}" GroupName="Align" />
+                <RadioButton Name="CmdJustifyCenter" ToolTip="Align Center" Style="{StaticResource GlyphRadio}" Content="{fa:Glyphs AlignCenter}" GroupName="Align" />
+                <RadioButton Name="CmdJustifyRight" ToolTip="Align Right" Style="{StaticResource GlyphRadio}" Content="{fa:Glyphs AlignRight}" GroupName="Align" />
+                <RadioButton Name="CmdJustifyFull" ToolTip="Align Justify" Style="{StaticResource GlyphRadio}" Content="{fa:Glyphs AlignJustify}" GroupName="Align" />
+            </ToolBar>
+            <ToolBar Name="MiscBar">
+                <Button Name="CmdUndo" ToolTip="Undo" Style="{StaticResource GlyphButton}" Content="{fa:Glyphs Undo}" />
+                <Button Name="CmdRedo" ToolTip="Redo" Style="{StaticResource GlyphButton}" Content="{fa:Glyphs Undo}"  RenderTransformOrigin="0.5,0.5">
+                    <Button.RenderTransform>
+                        <ScaleTransform ScaleX="-1" />
+                    </Button.RenderTransform>
+                </Button>
+                <ToggleButton Name="ButtonCode" ToolTip="Switch Visual/Code"  Style="{StaticResource GlyphToggle}" Content="{fa:Glyphs Code}" />
+            </ToolBar>
+        </ToolBarTray>
+        <WebBrowser Name="Browser" Grid.Row="1" />
+        <TextBox Margin="10" Name="Code" FontFamily="Lucida Console" FontSize="12" TextWrapping="Wrap" AcceptsReturn="True" Grid.Row="1" Visibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" />
+    </Grid>
+</UserControl>
