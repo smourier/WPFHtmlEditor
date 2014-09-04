@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using SoftFluent.Tools;
 
 namespace WPFHtmlEditor
 {
@@ -20,6 +21,21 @@ namespace WPFHtmlEditor
         public MainWindow()
         {
             InitializeComponent();
+            //Editor.Browser.Navigate("http://www.softfluent.com");
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            if (!e.Handled)
+            {
+                MainMenu.RaiseMenuItemClickOnKeyGesture(e);
+            }
+        }
+
+        private void MenuExit_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
         }
     }
 }
