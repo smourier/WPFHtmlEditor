@@ -24,7 +24,7 @@
             <Setter Property="Padding" Value="2" />
         </Style>
     </UserControl.Resources>
-    <Grid>
+    <Grid IsEnabled="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=IsIE9OrHigher}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -36,8 +36,8 @@
                 <ToggleButton Name="CmdUnderline" ToolTip="Underline" Style="{StaticResource GlyphToggle}" Content="{fa:Glyphs Underline}" />
                 <ToggleButton Name="CmdSubcript" ToolTip="Subscript" Style="{StaticResource GlyphToggle}" Content="{fa:Glyphs Subscript}" />
                 <ToggleButton Name="CmdSuperscript" ToolTip="Superscript" Style="{StaticResource GlyphToggle}" Content="{fa:Glyphs Superscript}" />
-                <Button Name="Cmdms_pasteTextOnly" ToolTip="Paste Text Only" Style="{StaticResource GlyphButton}" Content="{fa:Glyphs Paste}" Foreground="Green" />
-                <Button Name="Cmdms_pasteContentOnly" ToolTip="Paste Content Only" Style="{StaticResource GlyphButton}" Content="{fa:Glyphs Paste}" Foreground="Orange" />
+                <Button Name="Cmdms_pasteTextOnly" ToolTip="Paste Text Only" Style="{StaticResource GlyphButton}" Content="{fa:Glyphs Paste}" Foreground="Green" IsEnabled="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=IsIE10OrHigher}"/>
+                <Button Name="Cmdms_pasteContentOnly" ToolTip="Paste Content Only" Style="{StaticResource GlyphButton}" Content="{fa:Glyphs Paste}" Foreground="Orange" IsEnabled="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=IsIE10OrHigher}"/>
                 <Button Name="CmdCreateLink" ToolTip="Insert Hyperlink" Style="{StaticResource GlyphButton}" Content="{fa:Glyphs Link}" />
                 <Button Name="ButtonFontColor" Style="{StaticResource GlyphButton}" Content="{fa:Glyphs Font}" Foreground="Red" />
             </ToolBar>

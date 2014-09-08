@@ -1,33 +1,88 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Management;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 using mshtml;
 
 namespace SoftFluent.Tools
 {
     public partial class HtmlEditor : UserControl
     {
+        public static readonly DependencyProperty BodyHtmlProperty =
+            DependencyProperty.Register("BodyHtml", typeof(string), typeof(HtmlEditor),
+            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.None, BodyHtmlPropertyChanged));
+
+        private HTMLBody _body;
+        private EventListener _listener = new EventListener();
+
         public HtmlEditor()
         {
+            _listener.Event += OnBodyChanged;
             InitializeComponent();
             Tray.Loaded += (sender, e) => AdjustStyle(Tray, Brushes.LightGray);
             Browser.LoadCompleted += Browser_LoadCompleted;
             Browser.NavigateToString("<html/>");
             AddHandler(ButtonBase.ClickEvent, new RoutedEventHandler(ButtonBase_Click));
+        }
+
+        private void OnBodyChanged(object sender, EventArgs e)
+        {
+            Trace.WriteLine("body changed");
+            IHTMLDocument2 doc = (IHTMLDocument2)Browser.Document;
+            if (doc == null)
+                return;
+
+            string bodyHtml = doc.body != null ? doc.body.innerHTML : null;
+            if (bodyHtml != BodyHtml)
+            {
+                Trace.WriteLine("body really changed new:" + bodyHtml);
+                BodyHtml = bodyHtml;
+            }
+        }
+
+        private static void BodyHtmlPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
+        {
+            Trace.WriteLine("BodyHtmlPropertyChanged new:" + e.NewValue + " old:" + e.OldValue);
+            HtmlEditor editor = (HtmlEditor)source;
+            IHTMLDocument2 doc = (IHTMLDocument2)editor.Browser.Document;
+            if (doc == null || doc.body == null)
+                return;
+
+            string value = (string)e.NewValue;
+
+            if (value == null)
+            {
+                value = string.Empty;
+            }
+            doc.body.innerHTML = value;
+        }
+
+        public bool IsIE9OrHigher
+        {
+            get
+            {
+                return BrowserVersion.Major >= 9;
+            }
+        }
+
+        public bool IsIE10OrHigher
+        {
+            get
+            {
+                return BrowserVersion.Major >= 10;
+            }
+        }
+
+        public bool IsIE11OrHigher
+        {
+            get
+            {
+                return BrowserVersion.Major >= 11;
+            }
         }
 
         public Version BrowserVersion
@@ -39,82 +94,41 @@ namespace SoftFluent.Tools
             }
         }
 
-        public string DocumentHtml
-        {
-            get
-            {
-                IHTMLDocument2 doc = (IHTMLDocument2)Browser.Document;
-                if (doc == null)
-                    return null;
-
-                return doc.body.parentElement.outerHTML;
-            }
-            set
-            {
-                if (value == DocumentHtml)
-                    return;
-
-                IHTMLDocument2 doc = (IHTMLDocument2)Browser.Document;
-                if (doc == null || doc.body == null)
-                    return;
-
-                if (value == null)
-                {
-                    value = string.Empty;
-                }
-                doc.body.parentElement.outerHTML = value;
-            }
-        }
-
         public string BodyHtml
         {
-            get
-            {
-                IHTMLDocument2 doc = (IHTMLDocument2)Browser.Document;
-                if (doc == null)
-                    return null;
-
-                return doc.body != null ? doc.body.innerHTML : null;
-            }
-            set
-            {
-                if (value == BodyHtml)
-                    return;
-
-                IHTMLDocument2 doc = (IHTMLDocument2)Browser.Document;
-                if (doc == null || doc.body == null)
-                    return;
-
-                if (value == null)
-                {
-                    value = string.Empty;
-                }
-                doc.body.innerHTML = value;
-            }
+            get { return (string)GetValue(BodyHtmlProperty); }
+            set { SetValue(BodyHtmlProperty, value); }
         }
 
-        public bool ExecuteCommand(string name, bool throwOnError)
+        public bool ExecuteCommand(string name, bool throwOnError, bool raiseChanged)
         {
-            return ExecuteCommand(name, false, Type.Missing, throwOnError);
+            return ExecuteCommand(name, false, Type.Missing, throwOnError, raiseChanged);
         }
 
-        public bool ExecuteCommand(string name, bool showUi, object value, bool throwOnError)
+        public bool ExecuteCommand(string name, bool showUi, object value, bool throwOnError, bool raiseChanged)
         {
             IHTMLDocument2 doc = (IHTMLDocument2)Browser.Document;
             if (doc == null)
                 return false;
 
+            bool b;
             if (throwOnError)
-                return doc.execCommand(name, showUi, value);
-
+            {
+                b = doc.execCommand(name, showUi, value);
+            }
             try
             {
-                return doc.execCommand(name, showUi, value);
+                b = doc.execCommand(name, showUi, value);
             }
             catch
             {
-                return false;
+                b = false;
             }
+            if (b)
+            {
+                OnBodyChanged(this, EventArgs.Empty);
+            }
+            return b;
         }
 
         public bool IsCommandEnabled(string name)
@@ -159,7 +173,7 @@ namespace SoftFluent.Tools
             {
                 string command = bb.Name.StartsWith(commandPrefix) ? bb.Name.Substring(commandPrefix.Length) : bb.Name;
                 command = command.Replace("_", "-"); // handle ms- commands
-                ExecuteCommand(command, false);
+                ExecuteCommand(command, false, true);
                 return;
             }
 
@@ -185,7 +199,7 @@ namespace SoftFluent.Tools
                 Browser.Visibility = Visibility.Hidden;
                 Code.Visibility = Visibility.Visible;
             }
-            
+
             StyleBar.IsEnabled = Browser.Visibility == Visibility.Visible;
             IndentBar.IsEnabled = Browser.Visibility == Visibility.Visible;
             AlignBar.IsEnabled = Browser.Visibility == Visibility.Visible;
@@ -195,11 +209,32 @@ namespace SoftFluent.Tools
 
         private void Browser_LoadCompleted(object sender, NavigationEventArgs e)
         {
+            try
+            {
+                Browser_LoadCompleted(e);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("Error:" + ex);
+            }
+        }
+
+        private void Browser_LoadCompleted(NavigationEventArgs e)
+        {
             IHTMLDocument2 doc = (IHTMLDocument2)Browser.Document;
             IHTMLBodyElement body = (IHTMLBodyElement)doc.body;
             doc.charset = "utf-8";
             ((IHTMLElement3)body).contentEditable = "true";
-            var v = BrowserVersion;
+            _body = (HTMLBody)doc.body;
+
+            dynamic d = doc;
+            d.attachEvent("onkeyup", _listener);
+            d.attachEvent("onblur", _listener);
+            d.attachEvent("onchange", _listener);
+            d.attachEvent("oninput", _listener);
+            d.attachEvent("onpaste", _listener);
+            d.attachEvent("oncut", _listener);
+            d.attachEvent("onmouseup", _listener);
         }
 
         private static void AdjustStyle(ToolBarTray tray, Brush background)
@@ -224,6 +259,26 @@ namespace SoftFluent.Tools
             {
                 border.CornerRadius = new CornerRadius(0);
                 border.Background = background;
+            }
+        }
+
+        [ComVisible(true)]
+        public class EventListener : ICustomQueryInterface
+        {
+            public event EventHandler Event;
+
+            // some kind of a hack... we don't implement anything, we just fire when someone wants to call us...
+            // so we can have only one catch-all class 
+            public CustomQueryInterfaceResult GetInterface(ref Guid iid, out IntPtr ppv)
+            {
+                Trace.WriteLine("iid:" + iid);
+                ppv = IntPtr.Zero;
+                var handler = Event;
+                if (handler != null)
+                {
+                    handler(this, EventArgs.Empty);
+                }
+                return CustomQueryInterfaceResult.NotHandled;
             }
         }
     }
