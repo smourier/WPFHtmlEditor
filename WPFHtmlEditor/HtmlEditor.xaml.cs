@@ -14,7 +14,7 @@ namespace SoftFluent.Tools
     {
         public static readonly DependencyProperty BodyHtmlProperty =
             DependencyProperty.Register("BodyHtml", typeof(string), typeof(HtmlEditor),
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.None, BodyHtmlPropertyChanged));
+            new FrameworkPropertyMetadata(null));
 
         private HTMLBody _body;
         private EventListener _listener = new EventListener();
@@ -42,23 +42,6 @@ namespace SoftFluent.Tools
                 Trace.WriteLine("body really changed new:" + bodyHtml);
                 BodyHtml = bodyHtml;
             }
-        }
-
-        private static void BodyHtmlPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
-        {
-            Trace.WriteLine("BodyHtmlPropertyChanged new:" + e.NewValue + " old:" + e.OldValue);
-            HtmlEditor editor = (HtmlEditor)source;
-            IHTMLDocument2 doc = (IHTMLDocument2)editor.Browser.Document;
-            if (doc == null || doc.body == null)
-                return;
-
-            string value = (string)e.NewValue;
-
-            if (value == null)
-            {
-                value = string.Empty;
-            }
-            doc.body.innerHTML = value;
         }
 
         public bool IsIE9OrHigher
@@ -234,7 +217,6 @@ namespace SoftFluent.Tools
             d.attachEvent("oninput", _listener);
             d.attachEvent("onpaste", _listener);
             d.attachEvent("oncut", _listener);
-            d.attachEvent("onmouseup", _listener);
         }
 
         private static void AdjustStyle(ToolBarTray tray, Brush background)
